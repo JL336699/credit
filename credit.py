@@ -30,7 +30,6 @@ def get_bloomberg_data(cusip):
     request = service.createRequest('ReferenceDataRequest')
     request.getElement('securities').appendValue(cusip)
     
-    # List of Bloomberg field codes for the fundamentals
     fields = [
         'SALES_REV_TURN', 'IS_TOT_OPER_EXP', 'IS_DEPR_EXP', 'IS_INT_EXPENSE',
         'EBITDA', 'EBITDA_TO_REVENUE', 'EBIDA', 'EBIDA_MARGIN',
@@ -60,7 +59,10 @@ def get_bloomberg_data(cusip):
             break
     
     session.stop()
-    return pd.DataFrame([data])
+    df = pd.DataFrame([data])
+    st.write("Fetched Bloomberg Data:")
+    st.write(df)
+    return df
 
 def get_comparables(cusip, sector_code):
     """Retrieve comparable CUSIPs in the same sector."""
@@ -69,4 +71,57 @@ def get_comparables(cusip, sector_code):
         return pd.DataFrame()
     
     service = session.getService('//blp/refdata')
-    request = service.createRequest('Reference')
+    request = service.createRequest('ReferenceDataRequest')
+    request.getElement('securities').appendValue(f"Sector:{sector_code}")
+    
+    session.sendRequest(request)
+    comparables = []
+    
+    while True:
+        event = session.nextEvent()
+        for msg in event:
+            if msg.hasElement('securityData'):
+                security_data = msg.getElement('securityData')
+                if security_data.hasElement('fieldData'):
+                    field_data = security_data.getElement('fieldData')
+                    comparables.append(field_data)
+        if event.eventType() == blpapi.Event.RESPONSE:
+            break
+    
+    session.stop()
+    df = pd.DataFrame(comparables)
+    st.write("Fetched Comparable Data:")
+    st.write(df)
+    return df
+
+def show_data(cusip):
+    """Fetch and display data for the given CUSIP and its comparables."""
+    fundamentals = get_bloomberg_data(cusip)
+    
+    if fundamentals.empty:
+        st.write("No data found for the provided CUSIP.")
+        return
+    
+    # Assuming sector code is available in the fundamentals DataFrame
+    sector_code = fundamentals.get('SECTOR_CODE', [None])[0]
+    if sector_code:
+        comparables = get_comparables(cusip, sector_code)
+    
+        st.write(f"Fundamentals for CUSIP: {cusip}")
+        st.dataframe(fundamentals)
+        
+        st.write(f"Comparable CUSIPs in sector {sector_code}")
+        st.dataframe(comparables)
+    else:
+        st.write("No sector code found for the provided CUSIP.")
+
+def main():
+    """Streamlit app main function."""
+    st.title('Credit Analysis App')
+    cusip_input = st.text_input("Enter CUSIP:")
+    
+    if cusip_input:
+        show_data(cusip_input)
+
+if __name__ == '__main__':
+    main()
