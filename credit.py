@@ -6,7 +6,7 @@ from xbbg import blp
 def get_bloomberg_data(cusip):
     """Retrieve Bloomberg data for the given CUSIP."""
     try:
-        # Requesting data for the given CUSIP
+        # List of fields to request
         fields = [
             'SALES_REV_TURN', 'IS_TOT_OPER_EXP', 'IS_DEPR_EXP', 'IS_INT_EXPENSE',
             'EBITDA', 'EBITDA_TO_REVENUE', 'EBIDA', 'EBIDA_MARGIN',
@@ -16,8 +16,11 @@ def get_bloomberg_data(cusip):
             'BS_CASH_NEAR_CASH_ITEM', 'BS_TOTAL_DEBT_OUTSTANDING', 'BS_LT_BORROW',
             'BS_PENSIONS_LT_LIABS', 'BS_OPRB_LT_LIABS'
         ]
+        
+        # Fetching Bloomberg data
         data = blp.bdp(cusip, flds=fields)
         
+        # Check if data is returned
         if data.empty:
             st.write("No data found for the provided CUSIP.")
         return data
@@ -25,44 +28,15 @@ def get_bloomberg_data(cusip):
         st.error(f"An error occurred while fetching data: {e}")
         return pd.DataFrame()
 
-def get_comparables(cusip):
-    """Retrieve comparable CUSIPs in the same sector."""
-    try:
-        # Retrieve the sector code for the given CUSIP
-        sector_code = blp.bdp(cusip, flds=['SECTOR'])
-        sector_code = sector_code['SECTOR'].values[0] if not sector_code.empty else None
-        
-        if not sector_code:
-            st.write("Sector code not found for the provided CUSIP.")
-            return pd.DataFrame()
-        
-        # Request comparable data based on sector
-        comparables = blp.bds(f"Sector:{sector_code}", flds=[
-            'SECTOR', 'NAME', 'LAST_PRICE'
-        ])
-        return comparables
-    except Exception as e:
-        st.error(f"An error occurred while fetching comparables: {e}")
-        return pd.DataFrame()
-
 def show_data(cusip):
-    """Fetch and display data for the given CUSIP and its comparables."""
+    """Fetch and display data for the given CUSIP."""
     fundamentals = get_bloomberg_data(cusip)
     
-    if fundamentals.empty:
-        st.write("No data found for the provided CUSIP.")
-        return
-    
-    sector_code = fundamentals.get('SECTOR', [None])[0]
-    if sector_code:
-        comparables = get_comparables(cusip)
+    if not fundamentals.empty:
         st.write(f"Fundamentals for CUSIP: {cusip}")
         st.dataframe(fundamentals)
-        
-        st.write(f"Comparable CUSIPs in sector {sector_code}")
-        st.dataframe(comparables)
     else:
-        st.write("No sector code found for the provided CUSIP.")
+        st.write("No data found for the provided CUSIP.")
 
 def main():
     """Streamlit app main function."""
