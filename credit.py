@@ -10,7 +10,6 @@ BLOOMBERG_PORT = 8194
 def create_bloomberg_session():
     """Create and start a Bloomberg session."""
     session_options = blpapi.SessionOptions()
-    # Correctly set server address and port
     session_options.setServerHost(BLOOMBERG_SERVER)
     session_options.setServerPort(BLOOMBERG_PORT)
     
@@ -47,8 +46,8 @@ def get_bloomberg_data(cusip):
         request.getElement('fields').appendValue(field)
     
     session.sendRequest(request)
-    data = {}
     
+    data = {}
     while True:
         event = session.nextEvent()
         for msg in event:
@@ -58,10 +57,17 @@ def get_bloomberg_data(cusip):
                     field_data = security_data.getElement('fieldData')
                     for field in field_data.elements():
                         data[field.name()] = field.getValueAsString()
+            if msg.hasElement('responseError'):
+                st.error(f"Bloomberg API Error: {msg.getElement('responseError').getElementAsString('message')}")
+        
         if event.eventType() == blpapi.Event.RESPONSE:
             break
     
     session.stop()
+    
+    if not data:
+        st.warning(f"No data returned for CUSIP: {cusip}")
+    
     df = pd.DataFrame([data])
     st.write("Fetched Bloomberg Data:")
     st.write(df)
@@ -78,8 +84,8 @@ def get_comparables(cusip, sector_code):
     request.getElement('securities').appendValue(f"Sector:{sector_code}")
     
     session.sendRequest(request)
-    comparables = []
     
+    comparables = []
     while True:
         event = session.nextEvent()
         for msg in event:
@@ -88,10 +94,14 @@ def get_comparables(cusip, sector_code):
                 if security_data.hasElement('fieldData'):
                     field_data = security_data.getElement('fieldData')
                     comparables.append(field_data)
+            if msg.hasElement('responseError'):
+                st.error(f"Bloomberg API Error: {msg.getElement('responseError').getElementAsString('message')}")
+        
         if event.eventType() == blpapi.Event.RESPONSE:
             break
     
     session.stop()
+    
     df = pd.DataFrame(comparables)
     st.write("Fetched Comparable Data:")
     st.write(df)
