@@ -14,19 +14,19 @@ def fetch_data(cusip):
     # List of fields to fetch
     fields = {
         'SALES_REV_TURN': 'SALES_REV_TURN',
-        'EBIDA': 'EBIDA',
-        'EBIDA_MARGIN': 'EBIDA_MARGIN',
+        'EBIDA': 'EBITDA',
+        'EBIDA_MARGIN': 'EBITDA_MARGIN',
         'BS_TOTAL_DEBT_OUTSTANDING': 'BS_TOTAL_DEBT_OUTSTANDING',
         'BS_MAXIMUM_ANN_DEBT_SERVICE': 'BS_MAXIMUM_ANN_DEBT_SERVICE',
         'IS_INT_EXPENSE': 'IS_INT_EXPENSE',
         'ARDR_Annual_debt_service': 'ARDR_Annual_debt_service',
         'BS_LT_BORROW': 'BS_LT_BORROW',
-        'Ultimate_Borrower_Name': 'ULTIMATE_BORROWER_NAME',
-        'S&P Long Term Rating': 'S_AND_P_LONG_TERM_RATING',
-        'Moody\'s Long Term Rating': 'MOODYS_LONG_TERM_RATING',
-        'Fitch Long Term Rating': 'FITCH_LONG_TERM_RATING',
-        'Current Yield': 'CURRENT_YIELD',
-        'Coupon Maturity': 'COUPON_MATURITY',
+        'Ultimate_Borrower_Name': 'NAME',
+        'S&P Long Term Rating': 'S&P LT RATING',
+        'Moody\'s Long Term Rating': 'MOODY\'S LT RATING',
+        'Fitch Long Term Rating': 'FITCH LT RATING',
+        'Current Yield': 'YLD_YTM_MID',
+        'Coupon Maturity': 'CPN_MATURITY',
         'Price': 'PX_LAST',
         'Call/Put Date': 'CALL_PUT_DATE'
     }
