@@ -69,4 +69,4 @@ def get_comparables(cusip, sector_code):
         return pd.DataFrame()
     
     service = session.getService('//blp/refdata')
-    request = service.createRequest('Reference
+    request = service.createRequest('Reference')
