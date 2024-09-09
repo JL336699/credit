@@ -10,7 +10,10 @@ BLOOMBERG_PORT = 8194
 def create_bloomberg_session():
     """Create and start a Bloomberg session."""
     session_options = blpapi.SessionOptions()
-    session_options.setServerAddress(BLOOMBERG_SERVER, BLOOMBERG_PORT)
+    # Correctly set server address and port
+    session_options.setServerHost(BLOOMBERG_SERVER)
+    session_options.setServerPort(BLOOMBERG_PORT)
+    
     session = blpapi.Session(session_options)
     if not session.start():
         st.error("Failed to start Bloomberg session.")
